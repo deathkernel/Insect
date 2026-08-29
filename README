@@ -1,0 +1,60 @@
+Mouse Following Insect 🪲
+
+An interactive browser-based insect created using HTML5 Canvas, CSS, and JavaScript.
+
+The insect smoothly follows the user's mouse cursor while its segmented body, legs, wings, and antennae move naturally with it.
+
+✨ Features
+🪲 Interactive insect that follows the mouse cursor
+🦵 Animated legs and segmented body
+🪽 Transparent wings
+👀 Animated-looking eyes and antennae
+🖱️ Real-time mouse tracking
+🎨 Canvas-based rendering
+⚡ No external libraries required
+🌐 Runs directly in a web browser
+🛠️ Technologies Used
+HTML5
+CSS3
+JavaScript
+HTML5 Canvas API
+🚀 How to Run
+Clone this repository:
+git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+Open the project folder.
+Open index.html in your browser.
+
+That's it! No installation or dependencies are required.
+
+🎮 How It Works
+
+The project uses the HTML5 Canvas API to draw the insect.
+
+JavaScript tracks the mouse position and continuously updates the insect's position and rotation.
+
+The body is made from multiple segments that follow the segment in front of them, creating a smooth, organic movement.
+
+Mouse Cursor
+     ↓
+   🪲
+    \
+     \__
+        \___
+            \____
+📁 Project Structure
+Mouse-Following-Insect/
+│
+├── index.html
+└── README.md
+🔮 Future Improvements
+ More realistic insect movement
+ Different insect types
+ Walking animation
+ Wing animation
+ Click interactions
+ Mobile/touch support
+ Multiple insects
+ Customizable insect appearance
+📜 License
+
+This project is open source and available for learning and experimentation.

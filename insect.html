@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Following Insect</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #f4f1e8;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+canvas.width = W;
+canvas.height = H;
+
+
+/* =========================
+   MOUSE
+========================= */
+
+const mouse = {
+    x: W / 2,
+    y: H / 2
+};
+
+window.addEventListener("mousemove", e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
+
+
+/* =========================
+   INSECT BODY
+========================= */
+
+const insect = {
+
+    x: W / 2,
+    y: H / 2 + 150,
+
+    angle: -Math.PI / 2,
+
+    speed: 0.08,
+
+    body: []
+};
+
+
+/* Create abdomen segments */
+
+const bodySegments = 14;
+
+for (let i = 0; i < bodySegments; i++) {
+
+    insect.body.push({
+        x: insect.x,
+        y: insect.y + i * 10,
+        angle: insect.angle
+    });
+
+}
+
+
+/* =========================
+   BODY FOLLOWING
+========================= */
+
+function updateBody() {
+
+    /* Head follows mouse */
+
+    const dx = mouse.x - insect.x;
+    const dy = mouse.y - insect.y;
+
+    const targetAngle = Math.atan2(dy, dx);
+
+    /* Smooth rotation */
+
+    let angleDifference =
+        targetAngle - insect.angle;
+
+    while (angleDifference > Math.PI)
+        angleDifference -= Math.PI * 2;
+
+    while (angleDifference < -Math.PI)
+        angleDifference += Math.PI * 2;
+
+    insect.angle += angleDifference * 0.12;
+
+
+    /* Move */
+
+    const distance =
+        Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 10) {
+
+        insect.x +=
+            Math.cos(insect.angle) *
+            insect.speed *
+            distance;
+
+        insect.y +=
+            Math.sin(insect.angle) *
+            insect.speed *
+            distance;
+
+    }
+
+
+    /* Head */
+
+    insect.body[0].x = insect.x;
+    insect.body[0].y = insect.y;
+    insect.body[0].angle = insect.angle;
+
+
+    /* Body segments */
+
+    for (let i = 1; i < bodySegments; i++) {
+
+        const prev = insect.body[i - 1];
+        const current = insect.body[i];
+
+        const dx = prev.x - current.x;
+        const dy = prev.y - current.y;
+
+        const angle = Math.atan2(dy, dx);
+
+        const length = 11;
+
+        const targetX =
+            prev.x -
+            Math.cos(angle) * length;
+
+        const targetY =
+            prev.y -
+            Math.sin(angle) * length;
+
+        current.x +=
+            (targetX - current.x) * 0.35;
+
+        current.y +=
+            (targetY - current.y) * 0.35;
+
+        current.angle = angle;
+    }
+}
+
+
+/* =========================
+   DRAW BODY
+========================= */
+
+function drawBody() {
+
+    for (let i = bodySegments - 1; i >= 0; i--) {
+
+        const seg = insect.body[i];
+
+        const progress = i / bodySegments;
+
+        const radius =
+            7 - progress * 4;
+
+        ctx.save();
+
+        ctx.translate(seg.x, seg.y);
+
+        ctx.rotate(seg.angle);
+
+        /* abdomen */
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            0,
+            0,
+            radius * 1.5,
+            radius,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            i === 0
+                ? "#3b2a20"
+                : "#5a3b27";
+
+        ctx.fill();
+
+        /* abdomen stripe */
+
+        if (i > 2) {
+
+            ctx.strokeStyle =
+                "rgba(30,20,15,0.5)";
+
+            ctx.lineWidth = 1;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                -radius
+            );
+
+            ctx.lineTo(
+                0,
+                radius
+            );
+
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
+
+/* =========================
+   DRAW HEAD
+========================= */
+
+function drawHead() {
+
+    const head = insect.body[0];
+
+    ctx.save();
+
+    ctx.translate(head.x, head.y);
+
+    ctx.rotate(head.angle);
+
+
+    /* head */
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        0,
+        12,
+        9,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle = "#241a15";
+
+    ctx.fill();
+
+
+    /* eyes */
+
+    ctx.fillStyle = "#111";
+
+    ctx.beginPath();
+
+    ctx.arc(6, -5, 3, 0, Math.PI * 2);
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.arc(6, 5, 3, 0, Math.PI * 2);
+
+    ctx.fill();
+
+
+    /* antennae */
+
+    ctx.strokeStyle = "#302019";
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+
+    ctx.moveTo(7, -5);
+
+    ctx.quadraticCurveTo(
+        20,
+        -14,
+        27,
+        -9
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(7, 5);
+
+    ctx.quadraticCurveTo(
+        20,
+        14,
+        27,
+        9
+    );
+
+    ctx.stroke();
+
+
+    /* antenna tips */
+
+    ctx.fillStyle = "#241a15";
+
+    ctx.beginPath();
+
+    ctx.arc(27, -9, 2, 0, Math.PI * 2);
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.arc(27, 9, 2, 0, Math.PI * 2);
+
+    ctx.fill();
+
+
+    ctx.restore();
+}
+
+
+/* =========================
+   DRAW WINGS
+========================= */
+
+function drawWings() {
+
+    const head = insect.body[2];
+
+    ctx.save();
+
+    ctx.translate(head.x, head.y);
+
+    ctx.rotate(head.angle);
+
+
+    /* left wing */
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        -2,
+        -13,
+        24,
+        8,
+        -0.25,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "rgba(190,210,200,0.55)";
+
+    ctx.fill();
+
+    ctx.strokeStyle =
+        "rgba(70,70,60,0.5)";
+
+    ctx.stroke();
+
+
+    /* right wing */
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        -2,
+        13,
+        24,
+        8,
+        0.25,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "rgba(190,210,200,0.55)";
+
+    ctx.fill();
+
+    ctx.stroke();
+
+
+    /* wing veins */
+
+    ctx.strokeStyle =
+        "rgba(80,80,70,0.35)";
+
+    ctx.lineWidth = 1;
+
+    for (let y of [-13, 13]) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(-5, y);
+
+        ctx.lineTo(-22, y);
+
+        ctx.stroke();
+
+    }
+
+    ctx.restore();
+}
+
+
+/* =========================
+   DRAW LEGS
+========================= */
+
+function drawLegs() {
+
+    for (let i = 2; i < 10; i += 2) {
+
+        const seg = insect.body[i];
+
+        const progress = i / bodySegments;
+
+        const legLength =
+            24 + progress * 10;
+
+
+        for (let side of [-1, 1]) {
+
+            const angle =
+                seg.angle +
+                side *
+                (Math.PI / 2.5);
+
+
+            const bendX =
+                seg.x +
+                Math.cos(angle) *
+                legLength * 0.55;
+
+            const bendY =
+                seg.y +
+                Math.sin(angle) *
+                legLength * 0.55;
+
+
+            const footX =
+                bendX +
+                Math.cos(
+                    angle + side * 0.35
+                ) *
+                legLength *
+                0.6;
+
+            const footY =
+                bendY +
+                Math.sin(
+                    angle + side * 0.35
+                ) *
+                legLength *
+                0.6;
+
+
+            ctx.strokeStyle = "#33241c";
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+
+            ctx.moveTo(seg.x, seg.y);
+
+            ctx.lineTo(bendX, bendY);
+
+            ctx.lineTo(footX, footY);
+
+            ctx.stroke();
+
+
+            /* foot */
+
+            ctx.lineWidth = 1;
+
+            ctx.beginPath();
+
+            ctx.moveTo(footX, footY);
+
+            ctx.lineTo(
+                footX +
+                Math.cos(seg.angle) * 5,
+
+                footY +
+                Math.sin(seg.angle) * 5
+            );
+
+            ctx.stroke();
+        }
+    }
+}
+
+
+/* =========================
+   DRAW
+========================= */
+
+function draw() {
+
+    ctx.clearRect(0, 0, W, H);
+
+    drawWings();
+    drawLegs();
+    drawBody();
+    drawHead();
+}
+
+
+/* =========================
+   ANIMATION
+========================= */
+
+function animate() {
+
+    updateBody();
+
+    draw();
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener("resize", () => {
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W;
+    canvas.height = H;
+
+});
+
+</script>
+
+</body>
+</html>
